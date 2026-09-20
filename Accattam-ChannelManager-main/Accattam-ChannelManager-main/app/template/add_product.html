@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aggiungi Prodotto</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 900px; 
+            margin: 50px auto; 
+            padding: 20px; 
+            background-color: #f5f5f5;
+        }
+        h1 { color: #333; }
+        h2 { 
+            color: #4CAF50; 
+            border-bottom: 2px solid #4CAF50; 
+            padding-bottom: 5px; 
+            margin-top: 30px; 
+        }
+        .marketplace-section {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            background: #f9f9f9;
+        }
+        .marketplace-section.ebay { border-color: #0064D2; }
+        .marketplace-section.catawiki { border-color: #FF6B35; }
+        .marketplace-section h2.ebay { color: #0064D2; border-bottom-color: #0064D2; }
+        .marketplace-section h2.catawiki { color: #FF6B35; border-bottom-color: #FF6B35; }
+        form { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group { margin-bottom: 15px; }
+        label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold; 
+            color: #555;
+        }
+        input, select, textarea { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+            font-size: 14px;
+        }
+        textarea { min-height: 120px; }
+        button { 
+            background: #4CAF50; 
+            color: white; 
+            padding: 14px 35px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            margin-top: 20px; 
+            font-weight: bold;
+        }
+        button:hover { background: #45a049; }
+        .required { color: red; }
+        a { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: #666; 
+            text-decoration: none;
+        }
+        a:hover { color: #4CAF50; }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .helper-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 3px;
+        }
+        .marketplace-checkbox-group {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            border: 2px solid #4CAF50;
+        }
+        .marketplace-checkbox-group h3 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .checkbox-item label {
+            font-size: 16px;
+            cursor: pointer;
+            margin: 0;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>👜 Aggiungi Nuovo Prodotto</h1>
+
+    <form method="POST" action="/add-product">
+
+        <!-- SEZIONE: DATI BASE (sempre visibile) -->
+        <h2>📋 Informazioni Base</h2>
+
+        <div class="form-group">
+            <label>Reference <span class="required">*</span></label>
+            <input type="text" name="reference" required placeholder="Es: BAG-001">
+            <div class="helper-text">Codice univoco del prodotto</div>
+        </div>
+
+        <div class="form-group">
+            <label>Titolo <span class="required">*</span></label>
+            <input type="text" name="title" required placeholder="Es: Gucci Marmont Leather Shoulder Bag">
+            <div class="helper-text">Massimo 80 caratteri per eBay</div>
+        </div>
+
+        <div class="form-group">
+            <label>Descrizione <span class="required">*</span></label>
+            <textarea name="description" required placeholder="Descrizione dettagliata della borsa"></textarea>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Categoria <span class="required">*</span></label>
+                <input type="text" name="category" value="Bag" required placeholder="Es: Bag, Handbag">
+            </div>
+
+            <div class="form-group">
+                <label>Brand <span class="required">*</span></label>
+                <input type="text" name="brand" required placeholder="Es: Louis Vuitton, Gucci">
+            </div>
+        </div>
+
+        <h2>🎨 Caratteristiche</h2>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Condizione <span class="required">*</span></label>
+                <select name="condition" required>
+                    <option value="">-- Seleziona --</option>
+                    <option value="New">New</option>
+                    <option value="Like New">Like New</option>
+                    <option value="Used" selected>Used</option>
+                    <option value="Good">Good</option>
+                    <option value="Fair">Fair</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Genere <span class="required">*</span></label>
+                <select name="gender" required>
+                    <option value="">-- Seleziona --</option>
+                    <option value="Women">Women</option>
+                    <option value="Men">Men</option>
+                    <option value="Unisex">Unisex</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Colore <span class="required">*</span></label>
+                <input type="text" name="color" required placeholder="Es: Black, Brown">
+            </div>
+
+            <div class="form-group">
+                <label>Materiale <span class="required">*</span></label>
+                <input type="text" name="material" required placeholder="Es: Leather, Canvas">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Prezzo (€) <span class="required">*</span></label>
+            <input type="number" step="0.01" name="price" required placeholder="Es: 299.99">
+            <div class="helper-text">Valore stimato per Catawiki, prezzo vendita per eBay</div>
+        </div>
+
+        <!-- SELEZIONE MARKETPLACE -->
+        <div class="marketplace-checkbox-group">
+            <h3>🌐 Pubblica su:</h3>
+            <div class="helper-text" style="margin-bottom: 15px;">
+                Seleziona i marketplace dove vuoi vendere questo prodotto
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" id="enable-ebay" name="enable_ebay" value="yes" checked>
+                <label for="enable-ebay">🛒 eBay</label>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" id="enable-catawiki" name="enable_catawiki" value="yes" checked>
+                <label for="enable-catawiki">🎨 Catawiki</label>
+            </div>
+        </div>
+
+        <!-- SEZIONE EBAY (dinamica) -->
+        <div id="ebay-section" class="marketplace-section ebay">
+            <h2 class="ebay">🛒 Dati eBay</h2>
+
+            <div class="form-group">
+                <label>Stile <span class="required">*</span></label>
+                <select name="style" required>
+                    <option value="">-- Seleziona tipologia borsa --</option>
+                    <option value="Shoulder Bag">Shoulder Bag</option>
+                    <option value="Tote Bag">Tote Bag</option>
+                    <option value="Crossbody Bag">Crossbody Bag</option>
+                    <option value="Backpack">Backpack</option>
+                    <option value="Mini Bag">Mini Bag</option>
+                </select>
+                <div class="helper-text">Tipologia di borsa per le specifiche eBay</div>
+            </div>
+        </div>
+
+        <!-- SEZIONE CATAWIKI (dinamica) -->
+        <div id="catawiki-section" class="marketplace-section catawiki">
+            <h2 class="catawiki">🎨 Dati Catawiki</h2>
+
+            <h3 style="color: #666; font-size: 14px; margin-top: 0;">Dimensioni</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Altezza (cm)</label>
+                    <input type="number" step="0.1" name="height" class="catawiki-field" placeholder="Es: 20">
+                </div>
+
+                <div class="form-group">
+                    <label>Larghezza (cm)</label>
+                    <input type="number" step="0.1" name="width" class="catawiki-field" placeholder="Es: 30">
+                </div>
+            </div>
+
+            <h3 style="color: #666; font-size: 14px; margin-top: 25px;">Provenienza</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Era</label>
+                    <input type="text" name="era" class="catawiki-field" placeholder="Es: 2000s, 1990s">
+                </div>
+
+                <div class="form-group">
+                    <label>Cultura</label>
+                    <input type="text" name="culture" class="catawiki-field" placeholder="Es: Italian, French">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Secolo/Periodo temporale</label>
+                <input type="text" name="century_timeframe" class="catawiki-field" placeholder="Es: 21st century">
+            </div>
+
+            <h3 style="color: #666; font-size: 14px; margin-top: 25px;">Acquisizione Attuale</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Acquisito da</label>
+                    <input type="text" name="acquired_from" class="catawiki-field" placeholder="Es: Auction, Private seller">
+                </div>
+
+                <div class="form-group">
+                    <label>Anno acquisizione</label>
+                    <input type="text" name="year_acquired" class="catawiki-field" placeholder="Es: 2023">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Paese di acquisizione</label>
+                <input type="text" name="country_acquired_from" class="catawiki-field" placeholder="Es: Italy, France">
+            </div>
+
+            <h3 style="color: #666; font-size: 14px; margin-top: 25px;">Proprietario Precedente</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Acquisito da</label>
+                    <input type="text" name="previous_owner_acq_from" class="catawiki-field" placeholder="Es: Estate sale">
+                </div>
+
+                <div class="form-group">
+                    <label>Anno</label>
+                    <input type="text" name="previous_owner_year_acq" class="catawiki-field" placeholder="Es: 2015">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Paese</label>
+                <input type="text" name="previous_owner_country_acq" class="catawiki-field" placeholder="Es: Italy">
+            </div>
+
+            <div class="form-group">
+                <label>Verifica Legale</label>
+                <select name="legal_verify">
+                    <option value="yes" selected>Yes</option>
+                    <option value="no">No</option>
+                </select>
+            </div>
+
+            <h3 style="color: #666; font-size: 14px; margin-top: 25px;">Costi Spedizione</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Spedizione Italia (€)</label>
+                    <input type="number" step="0.01" name="shipping_italy" value="5.00">
+                </div>
+
+                <div class="form-group">
+                    <label>Spedizione EU (€)</label>
+                    <input type="number" step="0.01" name="shipping_eu" value="12.00">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Spedizione Resto del Mondo (€)</label>
+                <input type="number" step="0.01" name="shipping_row" value="20.00">
+            </div>
+        </div>
+
+        <button type="submit">✅ Aggiungi Prodotto</button>
+    </form>
+
+    <a href="/products">← Torna alla lista prodotti</a>
+
+    <script>
+        // Toggle visibility sezioni marketplace
+        const ebayCheckbox = document.getElementById('enable-ebay');
+        const catawikiCheckbox = document.getElementById('enable-catawiki');
+        const ebaySection = document.getElementById('ebay-section');
+        const catawikiSection = document.getElementById('catawiki-section');
+        const styleSelect = document.querySelector('select[name="style"]');
+
+        function toggleEbay() {
+            if (ebayCheckbox.checked) {
+                ebaySection.classList.remove('hidden');
+                // Se eBay è attivo, style diventa required
+                styleSelect.required = true;
+            } else {
+                ebaySection.classList.add('hidden');
+                // Se eBay non è attivo, style NON è required
+                styleSelect.required = false;
+            }
+        }
+
+        function toggleCatawiki() {
+            if (catawikiCheckbox.checked) {
+                catawikiSection.classList.remove('hidden');
+                // Rendi tutti i campi Catawiki obbligatori
+                catawikiFields.forEach(field => {
+                    field.required = true;
+                });
+                catawikiRequiredLabels.forEach(label => {
+                    label.style.display = 'inline';
+                });
+            } else {
+                catawikiSection.classList.add('hidden');
+                // Rimuovi required dai campi Catawiki
+                catawikiFields.forEach(field => {
+                    field.required = false;
+                });
+                catawikiRequiredLabels.forEach(label => {
+                    label.style.display = 'none';
+                });
+            }
+        }
+        ebayCheckbox.addEventListener('change', toggleEbay);
+        catawikiCheckbox.addEventListener('change', toggleCatawiki);
+
+        // Inizializzazione
+        toggleEbay();
+        toggleCatawiki();
+    </script>
+</body>
+</html>

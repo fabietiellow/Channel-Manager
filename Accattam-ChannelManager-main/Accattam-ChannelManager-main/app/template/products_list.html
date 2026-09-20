@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Channel Manager - Prodotti</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-published {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .status-not-published {
+            background-color: #ff9800;
+            color: white;
+        }
+        .status-exported {
+            background-color: #2196F3;
+            color: white;
+        }
+        .status-not-exported {
+            background-color: #9E9E9E;
+            color: white;
+        }
+        .actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        .btn-icon:hover {
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
+        .btn-icon-edit {
+            background-color: #FF9800;
+        }
+        .btn-icon-publish {
+            background-color: #0064D2;
+        }
+        .btn-icon-delete-ebay {
+            background-color: #f44336;
+        }
+        .btn-icon-delete-db {
+            background-color: #9C27B0;
+        }
+        .export-catawiki-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #FF6B35;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .export-catawiki-btn:hover {
+            background-color: #E85A2A;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .item-id {
+            font-family: monospace;
+            font-size: 11px;
+            color: #666;
+        }
+        .btn-add-product {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            display: inline-block;
+        }
+        .btn-add-product:hover {
+            background: #45a049;
+        }
+        .publish-multiple-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .publish-multiple-btn:hover {
+            background-color: #0b7dda;
+        }
+        .delete-multiple-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .delete-multiple-btn:hover {
+            background-color: #d32f2f;
+        }
+        .product-checkbox {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+        #select-all {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+        .delete-db-multiple-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #9C27B0;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .delete-db-multiple-btn:hover {
+            background-color: #7B1FA2;
+        }
+    </style>
+</head>
+<body>
+    <div style="text-align: right; padding: 10px 20px; background: #f5f5f5;">
+        Ciao, <strong>{{ current_user.name }}</strong> | 
+        <a href="{{ url_for('views.logout') }}" style="color: #f44336; text-decoration: none;">Logout</a>
+    </div>
+    <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div style="padding: 15px; border-radius: 4px; margin-bottom: 20px; color: white;
+                                background: {% if category == 'success' %}#4CAF50{% elif category == 'error' %}#f44336{% else %}#ff9800{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1 style="margin: 0;">📦 Channel Manager - Prodotti</h1>
+            <a href="{{ url_for('views.add_product') }}" class="btn-add-product">➕ Aggiungi Prodotto</a>
+        </div>
+        
+        <a href="/generate-catawiki-csv" class="export-btn">
+            📥 Esporta CSV Catawiki
+        </a>
+
+        <button type="button" onclick="publishSelected()" class="publish-multiple-btn">
+            🛒 Pubblica Selezionati su eBay
+        </button>
+        
+        <button type="button" onclick="deleteFromEbaySelected()" class="delete-multiple-btn">
+             ❌ Elimina Selezionati da eBay
+        </button>
+
+        <a href="{{ url_for('views.check_ebay_sales') }}" class="check-sales-btn">
+            🔔 Controlla Vendite eBay
+        </a>
+
+        <button type="button" onclick="deleteFromDatabaseSelected()" class="delete-db-multiple-btn">
+            🗑️ Elimina Selezionati dal Database
+        </button>
+
+        {% if products %}
+        <p>Totale prodotti: <strong>{{ products|length }}</strong></p>
+        
+        <form method="POST" action="{{ url_for('views.publish_multiple_ebay') }}" id="bulk-form">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">
+                            <input type="checkbox" id="select-all" title="Seleziona tutti">
+                        </th>
+                    <th>Reference</th>
+                    <th>Titolo</th>
+                    <th>Categoria</th>
+                    <th>Prezzo</th>
+                    <th>Stato eBay</th>
+                    <th>Stato Catawiki</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>
+                        <input type="checkbox" 
+                            value="{{ product.reference }}" 
+                            class="product-checkbox" 
+                            data-published="{{ 'true' if product.ebay_data and product.ebay_data.ebay_item_id else 'false' }}"
+                            data-product-id="{{ product.id }}"
+                            data-has-catawiki="{{ 'true' if product.catawiki_data else 'false' }}">
+                    </td>
+                    <td><strong>{{ product.reference }}</strong></td>
+                    <td>
+                        <details>
+                            <summary style="cursor: pointer; font-weight: bold; color: #333;">
+                                📋 {{ product.title }}
+                            </summary>
+                            <div style="margin-top: 10px; padding: 10px; background: #f9f9f9; border-left: 3px solid #4CAF50; font-size: 13px;">
+                                <p><strong>Reference:</strong> {{ product.reference }}</p>
+                                <p><strong>Descrizione:</strong> {{ product.description or 'N/A' }}</p>
+                                <p><strong>Brand:</strong> {{ product.brand }}</p>
+                                <p><strong>Style:</strong> {{ product.ebay_data.style if product.ebay_data else 'N/A' }}</p>
+                                <p><strong>Colore:</strong> {{ product.color }}</p>
+                                <p><strong>Materiale:</strong> {{ product.material }}</p>
+                                <p><strong>Genere:</strong> {{ product.gender }}</p>
+                                <p><strong>Condizione:</strong> {{ product.condition }}</p>
+                                <p><strong>Creato il:</strong> {{ product.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+                            </div>
+                        </details>
+                    </td>
+                    <td>{{ product.category or 'N/A' }}</td>
+                    <td>€ {{ "%.2f"|format(product.price) if product.price else 'N/A' }}</td>
+                    <td>
+                        {% if product.ebay_sold %}
+                            <!-- STATO: VENDUTO -->
+                            <span class="status status-sold">🎉 VENDUTO</span><br>
+                            <span class="item-id">Buyer: {{ product.ebay_buyer_username }}</span><br>
+                            <span class="item-id">Prezzo: €{{ "%.2f"|format(product.ebay_sale_price) if product.ebay_sale_price else product.price }}</span><br>
+                            <span class="item-id">{{ product.ebay_sold_at.strftime('%d/%m/%Y %H:%M') if product.ebay_sold_at else 'N/A' }}</span><br>
+                            {% if product.ebay_order_id %}
+                                <span class="item-id">Order: {{ product.ebay_order_id }}</span>
+                            {% endif %}
+                        {% elif product.ebay_data and product.ebay_data.ebay_item_id %}
+                            <!-- STATO: PUBBLICATO -->
+                            <span class="status status-published">✅ Pubblicato</span><br>
+                            <span class="item-id">ID: {{ product.ebay_data.ebay_item_id }}</span><br>
+                            <span class="item-id">{{ product.ebay_data.ebay_published_at.strftime('%d/%m/%Y %H:%M') }}</span><br>
+                            <a href="https://sandbox.ebay.com/itm/{{ product.ebay_data.ebay_item_id }}" 
+                               target="_blank" 
+                               class="btn-view-ebay"
+                               title="Visualizza su eBay Sandbox">
+                                🔗 Vedi su eBay
+                            </a>
+                        {% else %}
+                            <!-- STATO: NON PUBBLICATO -->
+                            <span class="status status-not-published">⏳ Non pubblicato</span>
+                        {% endif %}
+                    </td>
+                    
+                    <!-- COLONNA CATAWIKI -->
+                    <td>
+                        {% if product.catawiki_data %}
+                            {% if product.catawiki_data.catawiki_exported_at %}
+                                <span class="status status-exported">✅ Esportato</span><br>
+                                <span class="item-id">{{ product.catawiki_data.catawiki_exported_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                            {% else %}
+                                <span class="status status-not-exported">⏳ Da esportare</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="status" style="background-color: #757575; color: white;">❌ Non configurato</span>
+                        {% endif %}
+                    </td>
+                    
+                    <!-- COLONNA AZIONI -->
+                    <td>
+                        <div class="actions">
+                            
+                            <!-- Modifica: sempre disponibile -->
+                            <a href="{{ url_for('views.edit_product', reference=product.reference) }}" 
+                            class="btn-icon btn-icon-edit"
+                            title="Modifica prodotto">
+                                ✏️
+                            </a>
+                            
+                            {% if product.ebay_sold %}
+                                <!-- 🆕 Se venduto, non mostrare bottoni eBay -->
+                                <span style="color: #FF5722; font-size: 12px;">✅ Venduto</span>
+                            {% elif product.ebay_data and product.ebay_data.ebay_item_id %}
+                                <!-- Se pubblicato ma non venduto, mostra elimina da eBay -->
+                                <a href="/delete-ebay-listing/{{ product.ebay_data.ebay_item_id }}" 
+                                class="btn-icon btn-icon-delete-ebay"
+                                title="Elimina da eBay"
+                                onclick="return confirm('Sicuro di voler eliminare questo listing da eBay?')">
+                                    ❌
+                                </a>
+                            {% else %}
+                                <!-- Se non pubblicato, mostra pubblica su eBay -->
+                                <a href="/generate-ebay-listing/{{ product.reference }}" 
+                                class="btn-icon btn-icon-publish"
+                                title="Pubblica su eBay">
+                                    🛒
+                                </a>
+                            {% endif %}
+                            
+                            <!-- Elimina dal DB: solo se NON pubblicato o VENDUTO -->
+                            {% if not (product.ebay_data and product.ebay_data.ebay_item_id) or product.ebay_sold %}
+                                <a href="{{ url_for('views.delete_product', reference=product.reference) }}" 
+                                class="btn-icon btn-icon-delete-db"
+                                title="Elimina dal database"
+                                onclick="return confirm('ATTENZIONE: Vuoi eliminare definitivamente {{ product.title }} dal database?')">
+                                    🗑️
+                                </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </form>
+        {% else %}
+        <div class="empty-state">
+            <h2>Nessun prodotto trovato</h2>
+            <p>Aggiungi prodotti al database per iniziare</p>
+        </div>
+        {% endif %}
+    </div>
+    <script>
+    // Seleziona/deseleziona tutti
+    document.getElementById('select-all').addEventListener('change', function() {
+        var checkboxes = document.querySelectorAll('.product-checkbox');
+        checkboxes.forEach(function(checkbox) {
+            checkbox.checked = this.checked;
+        }, this);
+    });
+
+    // NUOVA FUNZIONE: Esporta Catawiki selezionati
+    function exportCatawikiSelected() {
+        var allChecked = document.querySelectorAll('.product-checkbox:checked');
+        var toExport = [];
+        var notConfigured = 0;
+        
+        // Filtra solo quelli con dati Catawiki configurati
+        allChecked.forEach(function(checkbox) {
+            if (checkbox.dataset.hasCatawiki === 'true') {
+                toExport.push(checkbox);
+            } else {
+                notConfigured++;
+            }
+        });
+        
+        if (toExport.length === 0 && notConfigured === 0) {
+            alert('Nessun prodotto selezionato!');
+            return;
+        }
+        
+        if (toExport.length === 0 && notConfigured > 0) {
+            alert('IMPOSSIBILE: I ' + notConfigured + ' prodotti selezionati non hanno dati Catawiki configurati!\n\nConfigura i dati Catawiki modificando i prodotti.');
+            return;
+        }
+        
+        var warningMessage = 'Esportare ' + toExport.length + ' prodotto/i per Catawiki?';
+        if (notConfigured > 0) {
+            warningMessage = 'Esportare ' + toExport.length + ' prodotto/i per Catawiki?\n\n(' + notConfigured + ' prodotti non configurati verranno ignorati)';
+        }
+        
+        if (confirm(warningMessage)) {
+            var form = document.getElementById('bulk-form');
+            
+            // Rimuovi vecchi input hidden per Catawiki
+            form.querySelectorAll('input[name="product_ids[]"]').forEach(function(input) {
+                if (input.type === 'hidden') input.remove();
+            });
+            
+            // Aggiungi product_ids per Catawiki (usa data-product-id)
+            toExport.forEach(function(checkbox) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'product_ids[]';
+                input.value = checkbox.dataset.productId;
+                form.appendChild(input);
+            });
+            
+            form.action = "{{ url_for('views.catawiki_export') }}";
+            form.submit();
+        }
+    }
+
+    // Pubblica i prodotti selezionati (solo quelli NON pubblicati)
+    function publishSelected() {
+        var allChecked = document.querySelectorAll('.product-checkbox:checked');
+        var toPublish = [];
+        
+        // Filtra solo quelli NON pubblicati
+        allChecked.forEach(function(checkbox) {
+            if (checkbox.dataset.published === 'false') {
+                toPublish.push(checkbox);
+            }
+        });
+        
+        if (toPublish.length === 0) {
+            alert('Nessun prodotto non-pubblicato selezionato!\n\nSeleziona prodotti che non sono ancora su eBay.');
+            return;
+        }
+        
+        if (confirm('Vuoi pubblicare ' + toPublish.length + ' prodotto/i su eBay?')) {
+            // Crea form dinamico con i prodotti da pubblicare
+            var form = document.getElementById('bulk-form');
+            
+            // Rimuovi vecchi input hidden
+            form.querySelectorAll('input[name="selected_products"]').forEach(function(input) {
+                if (input.type === 'hidden') input.remove();
+            });
+            
+            // Aggiungi solo quelli da pubblicare
+            toPublish.forEach(function(checkbox) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'selected_products';
+                input.value = checkbox.value;
+                form.appendChild(input);
+            });
+            
+            form.action = "{{ url_for('views.publish_multiple_ebay') }}";
+            form.submit();
+        }
+    }
+
+    // Elimina i prodotti selezionati (solo quelli pubblicati)
+    function deleteFromEbaySelected() {
+        var allChecked = document.querySelectorAll('.product-checkbox:checked');
+        var toDelete = [];
+        
+        // Filtra solo quelli pubblicati
+        allChecked.forEach(function(checkbox) {
+            if (checkbox.dataset.published === 'true') {
+                toDelete.push(checkbox);
+            }
+        });
+        
+        if (toDelete.length === 0) {
+            alert('Nessun prodotto pubblicato selezionato!\n\nSeleziona prodotti che sono già su eBay.');
+            return;
+        }
+        
+        if (confirm('ATTENZIONE: Vuoi eliminare ' + toDelete.length + ' prodotto/i da eBay?')) {
+            var form = document.getElementById('bulk-form');
+            
+            // Rimuovi vecchi input hidden
+            form.querySelectorAll('input[name="selected_products_delete"]').forEach(function(input) {
+                if (input.type === 'hidden') input.remove();
+            });
+            
+            // Aggiungi solo quelli da eliminare
+            toDelete.forEach(function(checkbox) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'selected_products_delete';
+                input.value = checkbox.value;
+                form.appendChild(input);
+            });
+            
+            form.action = "{{ url_for('views.delete_multiple_ebay') }}";
+            form.submit();
+        }
+    }
+
+    // Elimina i prodotti selezionati dal database (solo quelli NON pubblicati)
+    function deleteFromDatabaseSelected() {
+        var allChecked = document.querySelectorAll('.product-checkbox:checked');
+        var toDelete = [];
+        var blockedCount = 0;
+        
+        // Filtra solo quelli NON pubblicati
+        allChecked.forEach(function(checkbox) {
+            if (checkbox.dataset.published === 'false') {
+                toDelete.push(checkbox);
+            } else {
+                blockedCount++;
+            }
+        });
+        
+        if (toDelete.length === 0 && blockedCount === 0) {
+            alert('Nessun prodotto selezionato!');
+            return;
+        }
+        
+        if (toDelete.length === 0 && blockedCount > 0) {
+            alert('IMPOSSIBILE: I ' + blockedCount + ' prodotti selezionati sono pubblicati su eBay!\n\nEliminali prima da eBay, poi dal database.');
+            return;
+        }
+        
+        var warningMessage = 'ATTENZIONE: Stai per eliminare definitivamente ' + toDelete.length + ' prodotto/i dal database!\n\n';
+        if (blockedCount > 0) {
+            warningMessage += blockedCount + ' prodotti pubblicati su eBay NON verranno eliminati.\n\n';
+        }
+        warningMessage += 'Questa azione è IRREVERSIBILE. Continuare?';
+        
+        if (confirm(warningMessage)) {
+            var form = document.getElementById('bulk-form');
+            
+            // Rimuovi vecchi input hidden
+            form.querySelectorAll('input[name="selected_products_db"]').forEach(function(input) {
+                if (input.type === 'hidden') input.remove();
+            });
+            
+            // Aggiungi solo quelli da eliminare
+            toDelete.forEach(function(checkbox) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'selected_products_db';
+                input.value = checkbox.value;
+                form.appendChild(input);
+            });
+            
+            form.action = "{{ url_for('views.delete_multiple_products') }}";
+            form.submit();
+        }
+    }
+    </script>
+</body>
+</html>

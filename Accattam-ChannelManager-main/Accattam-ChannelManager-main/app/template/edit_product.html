@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifica prodotto</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 900px; 
+            margin: 50px auto; 
+            padding: 20px; 
+            background-color: #f5f5f5;
+        }
+        h1 { color: #333; }
+        h2 { 
+            color: #FF9800; 
+            border-bottom: 2px solid #FF9800; 
+            padding-bottom: 5px; 
+            margin-top: 30px; 
+        }
+        .marketplace-section {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            background: #f9f9f9;
+        }
+        .marketplace-section.ebay { border-color: #0064D2; }
+        .marketplace-section.catawiki { border-color: #FF6B35; }
+        .marketplace-section h2.ebay { color: #0064D2; border-bottom-color: #0064D2; }
+        .marketplace-section h2.catawiki { color: #FF6B35; border-bottom-color: #FF6B35; }
+        form { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group { margin-bottom: 15px; }
+        label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold; 
+            color: #555;
+        }
+        input, select, textarea { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+            font-size: 14px;
+        }
+        textarea { min-height: 120px; }
+        button { 
+            background: #FF9800; 
+            color: white; 
+            padding: 14px 35px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            margin-top: 20px; 
+            font-weight: bold;
+        }
+        button:hover { background: #E85A2A; }
+        .required { color: red; }
+        a { 
+            display: inline-block; 
+            margin-top: 20px; 
+            color: #666; 
+            text-decoration: none;
+        }
+        a:hover { color: #FF9800; }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .helper-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 3px;
+        }
+        .info-box {
+            background: #fff3cd;
+            border-left: 4px solid #FF9800;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .marketplace-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #2196F3;
+        }
+        .marketplace-info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>✏️ Modifica prodotto</h1>
+
+    <div class="info-box">
+        <strong>Reference:</strong> {{ product.reference }}<br>
+        <strong>Creato il:</strong> {{ product.created_at.strftime('%d/%m/%Y %H:%M') if product.created_at else 'N/A' }}
+    </div>
+
+    <div class="marketplace-info">
+        <p><strong>🛒 eBay:</strong> 
+            {% if product.ebay_data and product.ebay_data.ebay_item_id %}
+                ✅ Pubblicato (ItemID: {{ product.ebay_data.ebay_item_id }})
+            {% else %}
+                ⏳ Non pubblicato
+            {% endif %}
+        </p>
+        <p><strong>🎨 Catawiki:</strong> 
+            {% if product.catawiki_data and product.catawiki_data.catawiki_exported_at %}
+                ✅ Esportato il {{ product.catawiki_data.catawiki_exported_at.strftime('%d/%m/%Y') }}
+            {% else %}
+                ⏳ Non esportato
+            {% endif %}
+        </p>
+    </div>
+
+    <form method="POST" action="{{ url_for('views.edit_product', reference=product.reference) }}">
+
+        <!-- SEZIONE: DATI BASE -->
+        <h2>📋 Informazioni Base</h2>
+
+        <div class="form-group">
+            <label>Reference <span class="required">*</span></label>
+            <input type="text" name="reference" value="{{ product.reference }}" required readonly style="background: #f0f0f0;">
+            <div class="helper-text">La reference non può essere modificata</div>
+        </div>
+
+        <div class="form-group">
+            <label>Titolo <span class="required">*</span></label>
+            <input type="text" name="title" value="{{ product.title }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Descrizione</label>
+            <textarea name="description">{{ product.description or '' }}</textarea>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Categoria</label>
+                <input type="text" name="category" value="{{ product.category or 'Bag' }}">
+            </div>
+
+            <div class="form-group">
+                <label>Brand <span class="required">*</span></label>
+                <input type="text" name="brand" value="{{ product.brand }}" required>
+            </div>
+        </div>
+
+        <h2>🎨 Caratteristiche</h2>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Condizione</label>
+                <select name="condition">
+                    <option value="New" {% if product.condition == 'New' %}selected{% endif %}>New</option>
+                    <option value="Like New" {% if product.condition == 'Like New' %}selected{% endif %}>Like New</option>
+                    <option value="Used" {% if product.condition == 'Used' %}selected{% endif %}>Used</option>
+                    <option value="Good" {% if product.condition == 'Good' %}selected{% endif %}>Good</option>
+                    <option value="Fair" {% if product.condition == 'Fair' %}selected{% endif %}>Fair</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Genere</label>
+                <select name="gender">
+                    <option value="Women" {% if product.gender == 'Women' %}selected{% endif %}>Women</option>
+                    <option value="Men" {% if product.gender == 'Men' %}selected{% endif %}>Men</option>
+                    <option value="Unisex" {% if product.gender == 'Unisex' %}selected{% endif %}>Unisex</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Colore</label>
+                <input type="text" name="color" value="{{ product.color or 'Black' }}">
+            </div>
+
+            <div class="form-group">
+                <label>Materiale</label>
+                <input type="text" name="material" value="{{ product.material or 'Leather' }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Prezzo (€) <span class="required">*</span></label>
+            <input type="number" step="0.01" name="price" value="{{ product.price }}" required>
+        </div>
+
+        <!-- SEZIONE EBAY (sempre visibile se esiste) -->
+        {% if product.ebay_data %}
+        <div class="marketplace-section ebay">
+            <h2 class="ebay">🛒 Dati eBay</h2>
+            <div class="form-group">
+                <label>Stile</label>
+                <input type="text" name="style" value="{{ product.ebay_data.style or '' }}">
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- SEZIONE CATAWIKI (sempre visibile se esiste) -->
+        {% if product.catawiki_data %}
+        <div class="marketplace-section catawiki">
+            <h2 class="catawiki">🎨 Dati Catawiki</h2>
+
+            <h3 style="color: #666; font-size: 14px; margin-top: 0;">Dimensioni</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Altezza (cm)</label>
+                    <input type="number" step="0.1" name="height" value="{{ product.catawiki_data.height or '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Larghezza (cm)</label>
+                    <input type="number" step="0.1" name="width" value="{{ product.catawiki_data.width or '' }}">
+                </div>
+            </div>
+
+            <h3 style="color: #666; font-size: 14px; margin-top: 25px;">Provenienza</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Era</label>
+                    <input type="text" name="era" value="{{ product.catawiki_data.era or '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Cultura</label>
+                    <input type="text" name="culture" value="{{ product.catawiki_data.culture or '' }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Secolo/Periodo temporale</label>
+                <input type="text" name="century_timeframe" value="{{ product.catawiki_data.century_timeframe or '' }}">
+            </div>
+
+            <h3 style="color: #666; font-size: 14px; margin-top: 25px;">Acquisizione</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Acquisito da</label>
+                    <input type="text" name="acquired_from" value="{{ product.catawiki_data.acquired_from or '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Anno</label>
+                    <input type="text" name="year_acquired" value="{{ product.catawiki_data.year_acquired or '' }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Paese</label>
+                <input type="text" name="country_acquired_from" value="{{ product.catawiki_data.country_acquired_from or '' }}">
+            </div>
+
+            <h3 style="color: #666; font-size: 14px; margin-top: 25px;">Proprietario Precedente</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Acquisito da</label>
+                    <input type="text" name="previous_owner_acq_from" value="{{ product.catawiki_data.previous_owner_acq_from or '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Anno</label>
+                    <input type="text" name="previous_owner_year_acq" value="{{ product.catawiki_data.previous_owner_year_acq or '' }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Paese</label>
+                <input type="text" name="previous_owner_country_acq" value="{{ product.catawiki_data.previous_owner_country_acq or '' }}">
+            </div>
+
+            <div class="form-group">
+                <label>Verifica Legale</label>
+                <select name="legal_verify">
+                    <option value="yes" {% if product.catawiki_data.legal_verify == 'yes' %}selected{% endif %}>Yes</option>
+                    <option value="no" {% if product.catawiki_data.legal_verify == 'no' %}selected{% endif %}>No</option>
+                </select>
+            </div>
+
+            <h3 style="color: #666; font-size: 14px; margin-top: 25px;">Spedizione</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Italia (€)</label>
+                    <input type="number" step="0.01" name="shipping_italy" value="{{ product.catawiki_data.shipping_italy or 5.00 }}">
+                </div>
+
+                <div class="form-group">
+                    <label>EU (€)</label>
+                    <input type="number" step="0.01" name="shipping_eu" value="{{ product.catawiki_data.shipping_eu or 12.00 }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Resto del Mondo (€)</label>
+                <input type="number" step="0.01" name="shipping_row" value="{{ product.catawiki_data.shipping_row or 20.00 }}">
+            </div>
+        </div>
+        {% endif %}
+
+        <button type="submit">💾 Salva Modifiche</button>
+    </form>
+
+    <a href="/products">← Torna alla lista prodotti</a>
+</body>
+</html>
